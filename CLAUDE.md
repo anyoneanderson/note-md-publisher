@@ -66,10 +66,12 @@ note-md-publisher/
 
 | エンドポイント | 用途 |
 |--------------|------|
-| `POST /api/v1/text_notes` | 記事作成（id, key 取得） |
-| `PUT /api/v1/text_notes/{article_id}` | 記事更新（body, status, eyecatch_image_key） |
-| `POST /api/v1/upload_image` | 画像アップロード（multipart） |
+| `POST /api/v1/text_notes` | 記事作成（id, key 取得）→ 201 |
+| `POST /api/v1/text_notes/draft_save?id={id}` | 記事更新（body, status, eyecatch_image_src）→ 201 |
+| `POST /api/v1/image_upload/note_eyecatch` | 画像アップロード（multipart, note_id必須）→ 201 |
 | `GET /api/v2/creators/{username}` | Cookie有効性検証 |
+
+**必須ヘッダー**: `X-Requested-With: XMLHttpRequest`（POST操作に必須）
 
 詳細は `.specs/note-md-publisher/design.md` §3 を参照。
 
