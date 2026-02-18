@@ -56,27 +56,56 @@ async function getCookies() {
 
 describe('note.com Image API Contract Tests', { skip: !hasCredentials && '.env未設定のためスキップ' }, () => {
   let cookies;
+  let testNoteId;
 
   before(async () => {
     cookies = await getCookies();
+
+    // Create a temporary article to get a note_id for image upload
+    const cookieStr = Object.entries(cookies)
+      .map(([k, v]) => `${k}=${v}`)
+      .join('; ');
+    const res = await fetch(`${API_BASE}/v1/text_notes`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        Cookie: cookieStr,
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      },
+      body: JSON.stringify({
+        body: '',
+        name: '[テスト] 画像テスト用記事（自動削除予定）',
+        template_key: null,
+      }),
+    });
+    const json = await res.json();
+    testNoteId = json.data?.id;
   });
 
-  describe('POST /api/v1/upload_image', () => {
-    it('画像アップロードでdata.keyとdata.urlが返る', async () => {
+  describe('POST /api/v1/image_upload/note_eyecatch', () => {
+    it('画像アップロードでdata.urlが返る', async () => {
+      if (!testNoteId) {
+        assert.fail('テスト用記事IDが未取得');
+      }
+
       const testImagePath = join(__dirname, '..', 'fixtures', 'test-image.png');
       const buffer = await readFile(testImagePath);
 
       const blob = new Blob([buffer], { type: 'image/png' });
       const formData = new FormData();
       formData.append('file', blob, 'test-image.png');
+      formData.append('note_id', String(testNoteId));
 
       const cookieStr = Object.entries(cookies)
         .map(([k, v]) => `${k}=${v}`)
         .join('; ');
 
-      const res = await fetch(`${API_BASE}/v1/upload_image`, {
+      const res = await fetch(`${API_BASE}/v1/image_upload/note_eyecatch`, {
         method: 'POST',
         headers: {
+          'X-Requested-With': 'XMLHttpRequest',
           Cookie: cookieStr,
           'User-Agent':
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -84,10 +113,12 @@ describe('note.com Image API Contract Tests', { skip: !hasCredentials && '.env�
         body: formData,
       });
 
-      assert.equal(res.status, 200, `ステータス200を期待: got ${res.status}`);
+      assert.ok(
+        res.status === 200 || res.status === 201,
+        `ステータス200or201を期待: got ${res.status}`
+      );
       const json = await res.json();
       assert.ok(json.data, 'data オブジェクトが存在する');
-      assert.ok(typeof json.data.key === 'string', 'data.key は文字列');
       assert.ok(typeof json.data.url === 'string', 'data.url は文字列');
     });
   });

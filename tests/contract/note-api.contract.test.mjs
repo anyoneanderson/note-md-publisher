@@ -63,6 +63,7 @@ function buildHeaders(cookies) {
     .join('; ');
   return {
     'Content-Type': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest',
     Cookie: cookieStr,
     'User-Agent':
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -129,7 +130,10 @@ describe('note.com API Contract Tests', { skip: !hasCredentials && '.env未設�
         }),
       });
 
-      assert.equal(res.status, 200, `ステータス200を期待: got ${res.status}`);
+      assert.ok(
+        res.status === 200 || res.status === 201,
+        `ステータス200or201を期待: got ${res.status}`
+      );
       const json = await res.json();
       assert.ok(json.data, 'data オブジェクトが存在する');
       assert.ok(typeof json.data.id === 'number', 'data.id は数値');
@@ -139,8 +143,8 @@ describe('note.com API Contract Tests', { skip: !hasCredentials && '.env未設�
     });
   });
 
-  describe('PUT /api/v1/text_notes/{article_id}', () => {
-    it('記事更新でステータス200が返る', async () => {
+  describe('POST /api/v1/text_notes/draft_save', () => {
+    it('記事更新でステータス200or201が返る', async () => {
       // This test depends on the POST test having run first
       if (!createdArticleId) {
         assert.fail('記事IDが未取得（POST テストが先に失敗した可能性）');
@@ -148,9 +152,9 @@ describe('note.com API Contract Tests', { skip: !hasCredentials && '.env未設�
 
       const headers = buildHeaders(cookies);
       const res = await fetch(
-        `${API_BASE}/v1/text_notes/${createdArticleId}`,
+        `${API_BASE}/v1/text_notes/draft_save?id=${createdArticleId}&is_temp_saved=false`,
         {
-          method: 'PUT',
+          method: 'POST',
           headers,
           body: JSON.stringify({
             body: '<p>コントラクトテスト更新済み</p>',
@@ -160,24 +164,28 @@ describe('note.com API Contract Tests', { skip: !hasCredentials && '.env未設�
         }
       );
 
-      assert.equal(res.status, 200, `ステータス200を期待: got ${res.status}`);
+      assert.ok(
+        res.status === 200 || res.status === 201,
+        `ステータス200or201を期待: got ${res.status}`
+      );
     });
   });
 
   describe('エラーケース', () => {
-    it('無効なCookieで401が返る', async () => {
+    it('無効なCookieでstats APIがnot_loginエラーを返す', async () => {
       const headers = {
-        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
         Cookie: 'invalid_cookie=invalid_value',
         'User-Agent':
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
       };
-      const res = await fetch(`${API_BASE}/v2/creators/${username}`, {
+      const res = await fetch(`${API_BASE}/v1/stats/pv?filter=weekly`, {
         headers,
       });
+      const json = await res.json();
       assert.ok(
-        res.status === 401 || res.status === 403,
-        `401 or 403 を期待: got ${res.status}`
+        json.error?.code === 'auth' || json.error?.message === 'not_login',
+        `認証エラーを期待: got ${JSON.stringify(json)}`
       );
     });
   });

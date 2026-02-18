@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 import { loadContent } from '../lib/content-loader.mjs';
 import { convert } from '../lib/markdown-converter.mjs';
-import { postArticle } from '../lib/note-api.mjs';
+import { createArticle, updateArticle } from '../lib/note-api.mjs';
 import { uploadImage } from '../lib/image-uploader.mjs';
 import { authenticate } from '../lib/auth.mjs';
 
@@ -48,46 +48,51 @@ try {
   // Step 3: Convert markdown to HTML
   const htmlContent = await convert(content.body);
 
-  // Step 4: Upload image if specified
-  const imagePath = options.image
-    ? resolve(options.image)
-    : content.metadata.imagePath;
-  let imageKey = null;
-  if (imagePath) {
-    console.log(`画像アップロード中: ${imagePath}`);
-    const result = await uploadImage(imagePath, cookies);
-    imageKey = result.imageKey;
-    console.log(`画像アップロード完了: ${result.imageUrl}`);
-  }
-
-  // Step 5: Determine publish status
+  // Step 4: Determine publish status
   const shouldPublish = options.publish || content.metadata.publish;
   const status = shouldPublish ? 'published' : 'draft';
 
-  // Step 6: Post article
+  // Step 5: Get username
   const username = process.env.NOTE_USERNAME;
   if (!username) {
     throw new Error('NOTE_USERNAME が未設定です。.env ファイルを確認してください');
   }
 
-  console.log(`投稿中... (${status})`);
-  const result = await postArticle({
+  // Step 6: Create article (gets article ID needed for image upload)
+  console.log(`記事作成中...`);
+  const { articleId, articleKey } = await createArticle({ title, cookies });
+
+  // Step 7: Upload image if specified (requires article ID)
+  const imagePath = options.image
+    ? resolve(options.image)
+    : content.metadata.imagePath;
+  let imageUrl = null;
+  if (imagePath) {
+    console.log(`画像アップロード中: ${imagePath}`);
+    const result = await uploadImage(imagePath, cookies, articleId);
+    imageUrl = result.imageUrl;
+    console.log(`画像アップロード完了: ${imageUrl}`);
+  }
+
+  // Step 8: Update article with body, status, and image
+  console.log(`記事更新中... (${status})`);
+  await updateArticle({
+    articleId,
     htmlContent,
     title,
-    imageKey,
+    imageUrl,
     status,
     cookies,
-    username,
   });
 
-  // Step 7: Output result
-  if (result.success) {
-    console.log('');
-    console.log(`✓ 記事を${status === 'draft' ? '下書き保存' : '公開'}しました`);
-    console.log(`  URL: ${result.noteUrl}`);
-    console.log(`  ステータス: ${result.status}`);
-    console.log(`  記事ID: ${result.articleId}`);
-  }
+  const noteUrl = `https://note.com/${username}/n/${articleKey}`;
+
+  // Step 9: Output result
+  console.log('');
+  console.log(`✓ 記事を${status === 'draft' ? '下書き保存' : '公開'}しました`);
+  console.log(`  URL: ${noteUrl}`);
+  console.log(`  ステータス: ${status}`);
+  console.log(`  記事ID: ${articleId}`);
 } catch (err) {
   console.error('');
   console.error(`✗ 記事の投稿に失敗しました`);
