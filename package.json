@@ -1,0 +1,28 @@
+{
+  "name": "note-md-publisher",
+  "version": "0.1.0",
+  "description": "Publish Markdown articles to note.com via unofficial API",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/unit/",
+    "test:contract": "node --test tests/contract/",
+    "test:all": "node --test tests/",
+    "publish": "node scripts/publish.mjs"
+  },
+  "dependencies": {
+    "gray-matter": "^4.0.3",
+    "playwright": "^1.49.0",
+    "remark-html": "^16.0.1",
+    "remark-parse": "^11.0.0",
+    "unified": "^11.0.5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anyoneanderson/note-md-publisher.git"
+  },
+  "license": "MIT",
+  "author": "T. Anderson"
+}
