@@ -49,9 +49,9 @@ Cookie認証。Webブラウザでログイン後に取得されるセッショ�
 
 - ログインURL: `https://note.com/login`
 - ログインフォーム要素:
-  - メールアドレス: `input[name="email"]`（または `#email`）
-  - パスワード: `input[name="password"]`（または `#password`）
-  - ログインボタン: `button[type="submit"]`
+  - メールアドレス: `#email`（id属性）
+  - パスワード: `#password`（id属性）
+  - ログインボタン: `getByRole('button', { name: 'ログイン' })`（type="button"、初期状態disabled）
 - ログイン後リダイレクト: `?redirectPath=%2F` でトップページへ
 
 ### 3.3 共通ヘッダー
@@ -59,8 +59,11 @@ Cookie認証。Webブラウザでログイン後に取得されるセッショ�
 ```
 Content-Type: application/json
 User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
-Cookie: <セッションCookie>
+X-Requested-With: XMLHttpRequest
+Cookie: _note_session_v5=<セッションCookie値>
 ```
+
+**注意**: `X-Requested-With: XMLHttpRequest` ヘッダーはPOST/PUT操作に必須。
 
 ### 3.4 記事関連API
 
@@ -76,7 +79,7 @@ Request Body:
   "template_key": null
 }
 
-Response (200):
+Response (201):
 {
   "data": {
     "id": 12345678,          // 記事ID（数値）
@@ -88,24 +91,23 @@ Response (200):
 #### 記事更新・下書き保存（Step 2）
 
 ```
-PUT /api/v1/text_notes/{article_id}
+POST /api/v1/text_notes/draft_save?id={article_id}&is_temp_saved=false
 
 Request Body:
 {
   "body": "<HTML形式の本文>",
   "name": "記事タイトル",
-  "status": "draft",                    // "draft" or "published"
-  "eyecatch_image_key": "<image_key>"   // 画像キー（任意）
+  "status": "draft",                        // "draft" or "published"
+  "eyecatch_image_src": "<image_url>"       // 画像URL（任意）
 }
 
-Response (200): success
+Response (201):
+{
+  "data": { "result": true, "updated_at": "..." }
+}
 ```
 
-#### 下書き保存（別エンドポイント）
-
-```
-POST /api/v1/text_notes/draft_save?id={article_id}
-```
+**注意**: 旧エンドポイント `PUT /api/v1/text_notes/{article_id}` は422を返す（廃止済み）。
 
 #### 記事詳細取得
 
@@ -115,23 +117,25 @@ GET /api/v3/notes/{note_key}
 
 ### 3.5 画像API
 
-#### 画像アップロード
+#### アイキャッチ画像アップロード
 
 ```
-POST /api/v1/upload_image
+POST /api/v1/image_upload/note_eyecatch
 
 Request:
   Content-Type: multipart/form-data
-  Body: { file: <画像バイナリ> }
+  Body: { file: <画像バイナリ>, note_id: <記事ID> }
 
-Response (200):
+Response (201):
 {
   "data": {
-    "key": "<image_key>",    // eyecatch_image_key に使用
-    "url": "<image_url>"
+    "url": "<image_url>"    // eyecatch_image_src に使用
   }
 }
 ```
+
+**注意**: `note_id` は必須。記事作成（Step 1）後に取得したIDを使用する。
+旧エンドポイント `POST /api/v1/upload_image` は404を返す（廃止済み）。
 
 - 推奨サイズ: 10MB以下
 - 対応形式: JPEG, PNG, GIF
