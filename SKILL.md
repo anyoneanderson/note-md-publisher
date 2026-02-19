@@ -52,28 +52,43 @@ NOTE_USERNAMEは、あなたのnote.comプロフィールURL（`https://note.com
 
 ## 使い方
 
-### 基本（下書き保存）
+### 投稿前の確認フロー
 
-ユーザーにMarkdownファイルのパスを確認し、以下を実行します：
+投稿を実行する前に、以下の情報をAskUserQuestionで確認してください。
+ユーザーが既にコマンドやメッセージで明示している項目はスキップしてOKです。
 
+**確認項目（1回のAskUserQuestionでまとめて聞く）：**
+
+1. **アイキャッチ画像**: 画像パスが `--image` やフロントマターの `image` で指定されていない場合
+   - 選択肢: 「画像なしで投稿」「画像パスを指定する」
+2. **公開ステータス**: `--publish` が指定されていない場合
+   - 選択肢: 「下書き保存 (Recommended)」「即時公開」
+
+```
+例: AskUserQuestion
+question: "投稿設定を確認します"
+options:
+  - header: "アイキャッチ画像"
+    - "画像なしで投稿"
+    - "画像パスを指定する"
+  - header: "公開ステータス"
+    - "下書き保存 (Recommended)"
+    - "即時公開"
+```
+
+### 投稿コマンド
+
+**基本（下書き保存）：**
 ```bash
 cd $SKILL_DIR && node scripts/publish.mjs <path/to/article.md>
 ```
 
-### ヘッダー画像付き
-
+**ヘッダー画像付き：**
 ```bash
 cd $SKILL_DIR && node scripts/publish.mjs <path/to/article.md> --image <path/to/header.jpg>
 ```
 
-### 即時公開
-
-公開する前に、必ずAskUserQuestionで確認してください：
-
-> この記事を note.com に公開しますか？公開すると誰でも閲覧できるようになります。
-
-ユーザーが承認した場合のみ実行：
-
+**即時公開：**
 ```bash
 cd $SKILL_DIR && node scripts/publish.mjs <path/to/article.md> --publish --yes
 ```
