@@ -57,25 +57,34 @@ NOTE_USERNAME=your-note-username
 
 ## 使い方
 
-### 下書き保存
+### AIエージェントから（スキルとして）
+
+`npx skills add` でインストール済みであれば、エージェントに話しかけるだけで投稿できます：
+
+```
+> noteに投稿して content/note/my-article.md
+> この記事をnoteにアップして（画像: public/images/note/my-article.png）
+> noteに記事を公開して content/note/my-article.md --publish
+```
+
+エージェントが SKILL.md の指示に従い、自動で `publish.mjs` を実行します。
+
+### CLIから直接
 
 ```bash
+# 下書き保存（デフォルト）
 node scripts/publish.mjs path/to/article.md
-```
 
-### ヘッダー画像付き
-
-```bash
+# ヘッダー画像付き
 node scripts/publish.mjs path/to/article.md --image path/to/header.jpg
-```
 
-### 即時公開
-
-```bash
+# 即時公開
 node scripts/publish.mjs path/to/article.md --publish --yes
 ```
 
 ### フロントマター
+
+Markdownファイルの先頭にYAMLフロントマターで記事情報を指定できます：
 
 ```yaml
 ---
@@ -83,10 +92,13 @@ title: "記事タイトル"
 tags:
   - AI
   - プログラミング
-image: ./header.png
-publish: false
+image: ./header.png    # ヘッダー画像の相対パス
+publish: false         # true で即時公開
 ---
 ```
+
+- `title`: 未指定の場合は本文の最初のh1見出しを使用
+- `image`: `--image` オプションでも指定可能（CLIオプションが優先）
 
 ## テスト
 
