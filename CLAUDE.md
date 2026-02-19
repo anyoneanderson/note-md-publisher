@@ -20,8 +20,7 @@ npx playwright install --with-deps chromium
 # 記事投稿
 node scripts/publish.mjs <path/to/article.md>
 node scripts/publish.mjs <path> --image <path/to/header.jpg>
-node scripts/publish.mjs <path> --publish        # 即時公開
-node scripts/publish.mjs <path> --publish --yes   # 確認スキップ
+## ※ 記事は常に下書きとして保存されます（note.comに公開APIは存在しません）
 
 # テスト
 node --test tests/unit/              # ユニットテスト（常時実行可能）
@@ -67,7 +66,7 @@ note-md-publisher/
 | エンドポイント | 用途 |
 |--------------|------|
 | `POST /api/v1/text_notes` | 記事作成（id, key 取得）→ 201 |
-| `POST /api/v1/text_notes/draft_save?id={id}` | 記事更新（body, status, eyecatch_image_src）→ 201 |
+| `POST /api/v1/text_notes/draft_save?id={id}` | 記事更新（body, eyecatch_image_src）→ 201 |
 | `POST /api/v1/image_upload/note_eyecatch` | 画像アップロード（multipart, note_id必須）→ 201 |
 | `GET /api/v2/creators/{username}` | Cookie有効性検証 |
 

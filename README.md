@@ -16,7 +16,7 @@ Markdownファイルをnote.comに自動投稿するエージェントスキル(
 - フロントマター（YAML）でタイトル・タグ・画像を指定
 - ヘッダー画像のアップロード対応
 - Playwrightによる自動ログイン + Cookie永続化
-- 下書き保存（デフォルト）/ 即時公開を選択可能
+- 下書き保存に特化（非公式APIでは公開設定はできないようなのでnote.comから手動で行う必要があります）
 
 ## インストール
 
@@ -70,7 +70,7 @@ NOTE_USERNAME=your-note-username
 ```
 > noteに投稿して content/note/my-article.md
 > この記事をnoteにアップして（画像: public/images/note/my-article.png）
-> noteに記事を公開して content/note/my-article.md --publish
+> noteに記事を下書き保存して content/note/my-article.md
 ```
 
 エージェントが SKILL.md の指示に従い、自動で `publish.mjs` を実行します。
@@ -83,9 +83,6 @@ node scripts/publish.mjs path/to/article.md
 
 # ヘッダー画像付き
 node scripts/publish.mjs path/to/article.md --image path/to/header.jpg
-
-# 即時公開
-node scripts/publish.mjs path/to/article.md --publish --yes
 ```
 
 ### フロントマター
@@ -99,7 +96,6 @@ tags:
   - AI
   - プログラミング
 image: ./header.png    # ヘッダー画像の相対パス
-publish: false         # true で即時公開
 ---
 ```
 

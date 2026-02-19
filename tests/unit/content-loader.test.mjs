@@ -23,13 +23,6 @@ describe('ContentLoader', () => {
       assert.deepEqual(result.metadata.tags, ['AI', 'プログラミング']);
     });
 
-    it('フロントマターからpublishフラグを抽出できる', async () => {
-      const result = await loadContent(
-        join(fixturesDir, 'sample-with-frontmatter.md')
-      );
-      assert.equal(result.metadata.publish, false);
-    });
-
     it('フロントマターからimagePathを解決できる', async () => {
       const result = await loadContent(
         join(fixturesDir, 'sample-with-frontmatter.md')
@@ -82,13 +75,6 @@ describe('ContentLoader', () => {
         join(fixturesDir, 'sample-article.md')
       );
       assert.deepEqual(result.metadata.tags, []);
-    });
-
-    it('publish未指定時はfalse', async () => {
-      const result = await loadContent(
-        join(fixturesDir, 'sample-article.md')
-      );
-      assert.equal(result.metadata.publish, false);
     });
 
     it('image未指定時はnull', async () => {

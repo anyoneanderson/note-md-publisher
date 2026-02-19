@@ -15,7 +15,6 @@ const { values: options, positionals } = parseArgs({
   allowPositionals: true,
   options: {
     image: { type: 'string' },
-    publish: { type: 'boolean', default: false },
     yes: { type: 'boolean', default: false },
     help: { type: 'boolean', default: false },
   },
@@ -41,21 +40,17 @@ try {
   // Step 3: Convert markdown to HTML
   const htmlContent = await convert(content.body);
 
-  // Step 4: Determine publish status
-  const shouldPublish = options.publish || content.metadata.publish;
-  const status = shouldPublish ? 'published' : 'draft';
-
-  // Step 5: Get username
+  // Step 4: Get username
   const username = process.env.NOTE_USERNAME;
   if (!username) {
     throw new Error('NOTE_USERNAME が未設定です。.env ファイルを確認してください');
   }
 
-  // Step 6: Create article (gets article ID needed for image upload)
+  // Step 5: Create article (gets article ID needed for image upload)
   console.log(`記事作成中...`);
   const { articleId, articleKey } = await createArticle({ title, cookies });
 
-  // Step 7: Upload image if specified (requires article ID)
+  // Step 6: Upload image if specified (requires article ID)
   const imagePath = options.image
     ? resolve(options.image)
     : content.metadata.imagePath;
@@ -67,24 +62,22 @@ try {
     console.log(`画像アップロード完了: ${imageUrl}`);
   }
 
-  // Step 8: Update article with body, status, and image
-  console.log(`記事更新中... (${status})`);
+  // Step 7: Update article with body and image
+  console.log(`記事更新中...`);
   await updateArticle({
     articleId,
     htmlContent,
     title,
     imageUrl,
-    status,
     cookies,
   });
 
   const noteUrl = `https://note.com/${username}/n/${articleKey}`;
 
-  // Step 9: Output result
+  // Step 8: Output result
   console.log('');
-  console.log(`✓ 記事を${status === 'draft' ? '下書き保存' : '公開'}しました`);
+  console.log(`✓ 記事を下書き保存しました`);
   console.log(`  URL: ${noteUrl}`);
-  console.log(`  ステータス: ${status}`);
   console.log(`  記事ID: ${articleId}`);
 } catch (err) {
   console.error('');
@@ -129,7 +122,8 @@ function printUsage() {
 
 オプション:
   --image <path>      ヘッダー画像のパス
-  --publish           公開状態で投稿（デフォルトは下書き）
   --yes               確認プロンプトをスキップ
-  --help              ヘルプを表示`);
+  --help              ヘルプを表示
+
+※ 記事は常に下書きとして保存されます。公開はnote.comのWebUIから行ってください。`);
 }

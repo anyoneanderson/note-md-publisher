@@ -13,13 +13,13 @@ Markdownファイルとヘッダー画像を指定して、note.comに記事を�
 
 日本語:
 - 「noteに投稿して」
-- 「note.comに記事を公開して」
+- 「note.comに記事を下書き保存して」
 - 「この記事をnoteにアップして」
 - 「Markdownをnoteに投稿」
 
 English:
 - "Post to note.com"
-- "Publish article to note"
+- "Save article as draft on note"
 - "Upload this article to note.com"
 
 ## 初回セットアップ
@@ -61,8 +61,6 @@ NOTE_USERNAMEは、あなたのnote.comプロフィールURL（`https://note.com
 
 1. **アイキャッチ画像**: 画像パスが `--image` やフロントマターの `image` で指定されていない場合
    - 選択肢: 「画像なしで投稿」「画像パスを指定する」
-2. **公開ステータス**: `--publish` が指定されていない場合
-   - 選択肢: 「下書き保存 (Recommended)」「即時公開」
 
 ```
 例: AskUserQuestion
@@ -71,9 +69,6 @@ options:
   - header: "アイキャッチ画像"
     - "画像なしで投稿"
     - "画像パスを指定する"
-  - header: "公開ステータス"
-    - "下書き保存 (Recommended)"
-    - "即時公開"
 ```
 
 ### 投稿コマンド
@@ -88,10 +83,7 @@ cd $SKILL_DIR && node scripts/publish.mjs <path/to/article.md>
 cd $SKILL_DIR && node scripts/publish.mjs <path/to/article.md> --image <path/to/header.jpg>
 ```
 
-**即時公開：**
-```bash
-cd $SKILL_DIR && node scripts/publish.mjs <path/to/article.md> --publish --yes
-```
+※ 記事は常に下書きとして保存されます。公開はnote.comのWebUIから行ってください。
 
 ### フロントマター
 
@@ -104,14 +96,12 @@ tags:
   - AI
   - プログラミング
 image: ./header.png
-publish: false
 ---
 ```
 
 - `title`: 記事タイトル（未指定の場合は本文のh1を使用）
 - `tags`: タグ（配列）
 - `image`: ヘッダー画像の相対パス
-- `publish`: `true` で即時公開
 
 ## 出力
 
@@ -120,7 +110,6 @@ publish: false
 ```
 ✓ 記事を下書き保存しました
   URL: https://note.com/username/n/n1a2b3c4d5e6
-  ステータス: draft
   記事ID: 12345678
 ```
 

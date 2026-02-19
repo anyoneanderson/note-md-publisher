@@ -148,7 +148,6 @@ describe('note.com API Contract Tests', { skip: !hasCredentials && '.env未設�
           body: JSON.stringify({
             body: '<p>コントラクトテスト更新済み</p>',
             name: '[テスト] コントラクトテスト記事（更新済み・自動削除予定）',
-            status: 'draft',
           }),
         }
       );

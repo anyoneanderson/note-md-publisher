@@ -5,7 +5,8 @@
 ## プロジェクト概要
 
 note.comにMarkdown記事を自動投稿するClaude Codeエージェントスキル。
-非公式API + 2ステップ投稿（POST作成 → PUT更新）。本文はHTML形式。
+非公式API + 2ステップ下書き投稿（POST作成 → POST draft_save更新）。本文はHTML形式。
+公開APIは存在しないため、記事は常に下書きとして保存される。
 
 ## 必須ルール
 
@@ -40,8 +41,8 @@ tests/
 | 操作 | エンドポイント | ポイント |
 |------|--------------|---------|
 | 記事作成 | `POST /api/v1/text_notes` | `{ body, name, template_key: null }` → `data.id`, `data.key` |
-| 記事更新 | `PUT /api/v1/text_notes/{article_id}` | `{ body, name, status, eyecatch_image_key }` |
-| 画像UP | `POST /api/v1/upload_image` | multipart/form-data → `data.key`, `data.url` |
+| 記事更新 | `POST /api/v1/text_notes/draft_save?id={id}` | `{ body, name, eyecatch_image_src }` |
+| 画像UP | `POST /api/v1/image_upload/note_eyecatch` | multipart/form-data（note_id必須）→ `data.url` |
 | Cookie検証 | `GET /api/v2/creators/{username}` | 200=有効、401=期限切れ |
 
 - ベースURL: `https://note.com/api`

@@ -4,7 +4,6 @@ tags:
   - AI
   - プログラミング
 image: ./header.png
-publish: false
 ---
 
 # 本文の見出し
