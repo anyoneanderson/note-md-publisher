@@ -1,5 +1,7 @@
 # note-md-publisher
 
+> **⚠️ 注意**: 本ツールは note.com の**非公式API**を利用しています。note公式が提供・サポートするものではなく、APIの仕様は予告なく変更される可能性があります。ご利用にあたっては [noteご利用規約](https://terms.help-note.com/hc/ja/articles/44943817565465) を遵守し、規約に違反するような使い方（スパム投稿、大量自動投稿、不正アクセスなど）は絶対に行わないでください。本ツールの利用により生じた問題について、開発者は一切の責任を負いません。
+
 Markdownファイルをnote.comに自動投稿するClaude Codeエージェントスキル。
 
 ## 特徴
@@ -92,7 +94,7 @@ node --test tests/
 
 - Node.js 18+（ESM）
 - Playwright（ヘッドレスChromium）
-- unified + remark-parse + remark-html
+- unified + remark-parse + remark-gfm + remark-html
 - gray-matter
 - node:test
 
