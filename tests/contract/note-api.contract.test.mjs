@@ -35,24 +35,13 @@ async function loadEnv() {
 await loadEnv();
 
 const username = process.env.NOTE_USERNAME;
-const hasManualCookie = !!process.env.NOTE_COOKIE;
-const hasCredentials = hasManualCookie || !!(
+const hasCredentials = !!(
   process.env.NOTE_EMAIL &&
   process.env.NOTE_PASSWORD &&
   username
 );
 
-// Helper: get cookies via NOTE_COOKIE env var or Playwright authenticate
 async function getCookies() {
-  if (process.env.NOTE_COOKIE) {
-    // Parse manual cookie string "key=value; key2=value2"
-    const cookies = {};
-    for (const pair of process.env.NOTE_COOKIE.split(';')) {
-      const [key, ...rest] = pair.trim().split('=');
-      if (key) cookies[key.trim()] = rest.join('=').trim();
-    }
-    return cookies;
-  }
   const { authenticate } = await import('../../lib/auth.mjs');
   return authenticate();
 }

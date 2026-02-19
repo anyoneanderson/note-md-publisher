@@ -34,22 +34,13 @@ async function loadEnv() {
 
 await loadEnv();
 
-const hasManualCookie = !!process.env.NOTE_COOKIE;
-const hasCredentials = hasManualCookie || !!(
+const hasCredentials = !!(
   process.env.NOTE_EMAIL &&
   process.env.NOTE_PASSWORD &&
   process.env.NOTE_USERNAME
 );
 
 async function getCookies() {
-  if (process.env.NOTE_COOKIE) {
-    const cookies = {};
-    for (const pair of process.env.NOTE_COOKIE.split(';')) {
-      const [key, ...rest] = pair.trim().split('=');
-      if (key) cookies[key.trim()] = rest.join('=').trim();
-    }
-    return cookies;
-  }
   const { authenticate } = await import('../../lib/auth.mjs');
   return authenticate();
 }

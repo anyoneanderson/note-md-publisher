@@ -17,7 +17,6 @@ const { values: options, positionals } = parseArgs({
     image: { type: 'string' },
     publish: { type: 'boolean', default: false },
     yes: { type: 'boolean', default: false },
-    cookie: { type: 'string' },
     help: { type: 'boolean', default: false },
   },
 });
@@ -31,13 +30,7 @@ const inputPath = resolve(positionals[0]);
 
 try {
   // Step 1: Authenticate
-  let cookies;
-  if (options.cookie) {
-    // Manual cookie mode (MVP): parse "key=value; key2=value2" format
-    cookies = parseCookieString(options.cookie);
-  } else {
-    cookies = await authenticate();
-  }
+  const cookies = await authenticate();
 
   // Step 2: Load content
   const content = await loadContent(inputPath);
@@ -101,18 +94,6 @@ try {
 }
 
 /**
- * Parse manual cookie string "key=value; key2=value2" into dict.
- */
-function parseCookieString(str) {
-  const cookies = {};
-  for (const pair of str.split(';')) {
-    const [key, ...rest] = pair.trim().split('=');
-    if (key) cookies[key.trim()] = rest.join('=').trim();
-  }
-  return cookies;
-}
-
-/**
  * Load .env file into process.env.
  */
 async function loadEnv() {
@@ -150,6 +131,5 @@ function printUsage() {
   --image <path>      ヘッダー画像のパス
   --publish           公開状態で投稿（デフォルトは下書き）
   --yes               確認プロンプトをスキップ
-  --cookie <string>   手動Cookie指定（"key=value; key2=value2"形式）
   --help              ヘルプを表示`);
 }

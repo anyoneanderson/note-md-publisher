@@ -17,7 +17,7 @@ npm install
 # Playwrightブラウザインストール（初回のみ）
 npx playwright install --with-deps chromium
 
-# 記事投稿（MVP: 手動Cookie）
+# 記事投稿
 node scripts/publish.mjs <path/to/article.md>
 node scripts/publish.mjs <path> --image <path/to/header.jpg>
 node scripts/publish.mjs <path> --publish        # 即時公開
