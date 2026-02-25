@@ -66,5 +66,15 @@ describe('parseTags', () => {
       const result = parseTags(',,,');
       assert.deepEqual(result, []);
     });
+
+    it('nullで空配列を返す', () => {
+      const result = parseTags(null);
+      assert.deepEqual(result, []);
+    });
+
+    it('undefinedで空配列を返す', () => {
+      const result = parseTags(undefined);
+      assert.deepEqual(result, []);
+    });
   });
 });

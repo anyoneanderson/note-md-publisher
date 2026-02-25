@@ -9,6 +9,7 @@
  */
 
 import { resolve } from 'node:path';
+import { createInterface } from 'node:readline';
 import { parseArgs } from 'node:util';
 import { authenticateWithRaw } from '../lib/auth.mjs';
 import { loadContent } from '../lib/content-loader.mjs';
@@ -37,6 +38,7 @@ if (options.help || positionals.length === 0) {
 
 const articleInput = positionals[0];
 const username = process.env.NOTE_USERNAME;
+let shouldPublish = options.publish;
 
 let session = null;
 
@@ -50,22 +52,33 @@ try {
     tags = content.metadata.tags || [];
   }
 
-  // Step 2: Authenticate (get rawCookies for Playwright)
+  // Step 2: Confirm publish if --yes is not specified
+  if (shouldPublish && !options.yes) {
+    const confirmed = await confirmAction(
+      '記事を公開しますか？ (y/N): '
+    );
+    if (!confirmed) {
+      console.log('公開をスキップし、下書きとして保存します。');
+      shouldPublish = false;
+    }
+  }
+
+  // Step 3: Authenticate (get rawCookies for Playwright)
   console.log('認証中...');
   const { rawCookies } = await authenticateWithRaw();
 
-  // Step 3: Open browser and navigate to editor
+  // Step 4: Open browser and navigate to editor
   console.log('記事編集ページを開いています...');
   session = await openArticleEditor(articleInput, rawCookies);
 
-  // Step 4: Set hashtags if any
+  // Step 5: Set hashtags if any
   if (tags.length > 0) {
     console.log(`ハッシュタグを設定中: ${tags.map((t) => '#' + t).join(', ')}`);
     await setHashtags(session.page, tags);
   }
 
-  // Step 5: Publish or save draft
-  if (options.publish) {
+  // Step 6: Publish or save draft
+  if (shouldPublish) {
     console.log('記事を公開中...');
     await publishArticle(session.page);
   } else {
@@ -73,15 +86,15 @@ try {
     await saveDraft(session.page);
   }
 
-  // Step 6: Output result
+  // Step 7: Output result
   const noteUrl = username
     ? 'https://note.com/' + username + '/n/' + session.articleKey
     : 'https://note.com/notes/' + session.articleKey;
 
   console.log('');
-  if (options.publish && tags.length > 0) {
+  if (shouldPublish && tags.length > 0) {
     console.log('✓ ハッシュタグを設定し、記事を公開しました');
-  } else if (options.publish) {
+  } else if (shouldPublish) {
     console.log('✓ 記事を公開しました');
   } else if (tags.length > 0) {
     console.log('✓ ハッシュタグを設定しました（下書き）');
@@ -93,7 +106,7 @@ try {
   if (tags.length > 0) {
     console.log('  タグ: ' + tags.map((t) => '#' + t).join(', '));
   }
-  console.log('  ステータス: ' + (options.publish ? 'published' : 'draft'));
+  console.log('  ステータス: ' + (shouldPublish ? 'published' : 'draft'));
 } catch (err) {
   console.error('');
   console.error('✗ 操作に失敗しました');
@@ -104,6 +117,24 @@ try {
   if (session) {
     await closeBrowser(session);
   }
+}
+
+/**
+ * Prompt the user for confirmation via stdin.
+ * @param {string} message - Prompt message to display
+ * @returns {Promise<boolean>} true if the user answers 'y' or 'Y'
+ */
+function confirmAction(message) {
+  return new Promise((resolve) => {
+    const rl = createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+    rl.question(message, (answer) => {
+      rl.close();
+      resolve(answer.trim().toLowerCase() === 'y');
+    });
+  });
 }
 
 /**

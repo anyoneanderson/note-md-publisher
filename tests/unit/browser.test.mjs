@@ -38,6 +38,26 @@ describe('parseArticleInput', () => {
       );
     });
 
+    it('nullでエラーをスローする', () => {
+      assert.throws(
+        () => parseArticleInput(null),
+        (err) => {
+          assert.ok(err instanceof Error);
+          return true;
+        }
+      );
+    });
+
+    it('undefinedでエラーをスローする', () => {
+      assert.throws(
+        () => parseArticleInput(undefined),
+        (err) => {
+          assert.ok(err instanceof Error);
+          return true;
+        }
+      );
+    });
+
     it('不正な形式でエラーをスローする', () => {
       assert.throws(
         () => parseArticleInput('invalid'),
