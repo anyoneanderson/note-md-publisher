@@ -13,7 +13,7 @@ import { createInterface } from 'node:readline';
 import { parseArgs } from 'node:util';
 import { authenticateWithRaw } from '../lib/auth.mjs';
 import { loadContent } from '../lib/content-loader.mjs';
-import { openArticleEditor, closeBrowser } from '../lib/browser.mjs';
+import { openArticlePublishPage, openArticleEditor, closeBrowser } from '../lib/browser.mjs';
 import { parseTags, setHashtags } from '../lib/hashtag.mjs';
 import { publishArticle, saveDraft } from '../lib/publish-action.mjs';
 
@@ -52,7 +52,13 @@ try {
     tags = content.metadata.tags || [];
   }
 
-  // Step 2: Confirm publish if --yes is not specified
+  // Step 2: Warn if tags are specified without --publish
+  if (tags.length > 0 && !shouldPublish) {
+    console.log('注意: ハッシュタグは公開時(--publish)にのみ保存されます。');
+    console.log('      --publish を指定しない場合、タグは設定されません。');
+  }
+
+  // Step 3: Confirm publish if --yes is not specified
   if (shouldPublish && !options.yes) {
     const confirmed = await confirmAction(
       '記事を公開しますか？ (y/N): '
@@ -63,25 +69,27 @@ try {
     }
   }
 
-  // Step 3: Authenticate (get rawCookies for Playwright)
+  // Step 4: Authenticate (get rawCookies for Playwright)
   console.log('認証中...');
   const { rawCookies } = await authenticateWithRaw();
 
-  // Step 4: Open browser and navigate to editor
-  console.log('記事編集ページを開いています...');
-  session = await openArticleEditor(articleInput, rawCookies);
-
-  // Step 5: Set hashtags if any
-  if (tags.length > 0) {
-    console.log(`ハッシュタグを設定中: ${tags.map((t) => '#' + t).join(', ')}`);
-    await setHashtags(session.page, tags);
-  }
-
-  // Step 6: Publish or save draft
   if (shouldPublish) {
+    // Publish flow: open publish page → set tags → publish
+    console.log('公開設定ページを開いています...');
+    session = await openArticlePublishPage(articleInput, rawCookies);
+
+    if (tags.length > 0) {
+      console.log(`ハッシュタグを設定中: ${tags.map((t) => '#' + t).join(', ')}`);
+      await setHashtags(session.page, tags);
+    }
+
     console.log('記事を公開中...');
     await publishArticle(session.page);
   } else {
+    // Draft save flow: open editor page → save draft (tags not supported)
+    console.log('エディタページを開いています...');
+    session = await openArticleEditor(articleInput, rawCookies);
+
     console.log('下書きを保存中...');
     await saveDraft(session.page);
   }

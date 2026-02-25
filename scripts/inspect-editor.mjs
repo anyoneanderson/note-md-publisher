@@ -39,12 +39,10 @@ try {
   const { rawCookies } = await authenticateWithRaw();
 
   const { chromium } = await import('playwright');
-  const editUrl = URLS.EDIT_PAGE(articleKey);
 
   if (options.check) {
     // --check mode: headless selector health check
     console.log('セレクタヘルスチェックを実行中...');
-    console.log('URL: ' + editUrl);
     console.log('');
 
     browser = await chromium.launch({ headless: true });
@@ -55,38 +53,85 @@ try {
     await context.addCookies(rawCookies);
 
     const page = await context.newPage();
-    await page.goto(editUrl, {
-      waitUntil: 'domcontentloaded',
-      timeout: TIMEOUTS.NAVIGATION,
-    });
-
-    // Wait a moment for the page to render
-    await page.waitForTimeout(3000);
 
     let allOk = true;
     const results = [];
 
-    for (const [name, selector] of Object.entries(SELECTORS)) {
-      if (selector === null) {
+    // Check editor page selectors
+    const editUrl = URLS.EDIT_PAGE(articleKey);
+    console.log('エディタページ: ' + editUrl);
+    await page.goto(editUrl, {
+      waitUntil: 'domcontentloaded',
+      timeout: TIMEOUTS.NAVIGATION,
+    });
+    await page.waitForTimeout(3000);
+
+    const editorSelectors = [
+      'EDITOR_TITLE_INPUT',
+      'DRAFT_SAVE_BUTTON',
+      'PUBLISH_NEXT_BUTTON',
+    ];
+
+    for (const name of editorSelectors) {
+      const spec = SELECTORS[name];
+      if (spec === null) {
         results.push({ name, status: 'SKIP', detail: 'null (uses keyboard)' });
         continue;
       }
-
       try {
-        const element = await page.$(selector);
-        if (element) {
-          results.push({ name, status: 'OK', detail: selector });
+        const locator = page.getByRole(spec.role, { name: spec.name });
+        const visible = await locator.isVisible().catch(() => false);
+        if (visible) {
+          results.push({ name, status: 'OK', detail: `${spec.role}[name="${spec.name}"]` });
         } else {
-          results.push({ name, status: 'NG', detail: selector });
+          results.push({ name, status: 'NG', detail: `${spec.role}[name="${spec.name}"]` });
           allOk = false;
         }
       } catch (err) {
-        results.push({ name, status: 'NG', detail: selector + ' (' + err.message + ')' });
+        results.push({ name, status: 'NG', detail: `${spec.role}[name="${spec.name}"] (${err.message})` });
+        allOk = false;
+      }
+    }
+
+    // Check publish page selectors
+    const publishUrl = URLS.PUBLISH_PAGE(articleKey);
+    console.log('公開設定ページ: ' + publishUrl);
+    await page.goto(publishUrl, {
+      waitUntil: 'domcontentloaded',
+      timeout: TIMEOUTS.NAVIGATION,
+    });
+    await page.waitForTimeout(3000);
+
+    const publishSelectors = [
+      'HASHTAG_INPUT',
+      'HASHTAG_CONFIRM',
+      'PUBLISH_BUTTON',
+      'CANCEL_BUTTON',
+    ];
+
+    for (const name of publishSelectors) {
+      const spec = SELECTORS[name];
+      if (spec === null) {
+        results.push({ name, status: 'SKIP', detail: 'null (uses keyboard)' });
+        continue;
+      }
+      try {
+        const locator = page.getByRole(spec.role, { name: spec.name });
+        const visible = await locator.isVisible().catch(() => false);
+        if (visible) {
+          results.push({ name, status: 'OK', detail: `${spec.role}[name="${spec.name}"]` });
+        } else {
+          results.push({ name, status: 'NG', detail: `${spec.role}[name="${spec.name}"]` });
+          allOk = false;
+        }
+      } catch (err) {
+        results.push({ name, status: 'NG', detail: `${spec.role}[name="${spec.name}"] (${err.message})` });
         allOk = false;
       }
     }
 
     // Display results
+    console.log('');
     for (const r of results) {
       const icon = r.status === 'OK' ? 'OK' : r.status === 'SKIP' ? '--' : 'NG';
       console.log('  [' + icon + '] ' + r.name + ': ' + r.detail);
@@ -102,8 +147,10 @@ try {
     }
   } else {
     // Interactive mode: headless: false + page.pause()
+    const editUrl = URLS.EDIT_PAGE(articleKey);
     console.log('インタラクティブモードで起動中...');
-    console.log('URL: ' + editUrl);
+    console.log('エディタURL: ' + editUrl);
+    console.log('公開設定URL: ' + URLS.PUBLISH_PAGE(articleKey));
     console.log('');
     console.log('Playwright Inspector が開きます。');
     console.log('エディタのUI要素を調査し、セレクタを確認してください。');
