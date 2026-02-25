@@ -94,6 +94,16 @@ note-md-publisher/
 - `design.md` — API仕様、アーキテクチャ、モジュール設計、テスト戦略
 - `tasks.md` — 16タスク / 3フェーズ（Phase 1: MVP, Phase 2: 認証+画像+テスト, Phase 3: スキル化）
 
+## Development Workflow
+
+開発フロー（Issue → 実装 → PR）は以下のファイルに従ってください:
+- [docs/issue-to-pr-workflow.md](docs/issue-to-pr-workflow.md) — spec-workflow-init で生成された開発ワークフロー
+
+## コーディングルール
+
+実装時のコーディングルールは以下のファイルに従ってください:
+- [docs/coding-rules.md](docs/coding-rules.md) — spec-rules-init で生成された品質ルール集
+
 ## Constraints
 
 - **非公式API依存**: note.comのAPIは予告なく仕様変更される可能性がある
