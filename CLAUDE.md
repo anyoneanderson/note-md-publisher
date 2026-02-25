@@ -4,9 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Markdownファイルとヘッダー画像をnote.comに自動投稿するClaude Codeエージェントスキル。
-note.comの非公式APIを使用し、MD→HTML変換 → 2ステップ投稿（作成→更新）を行う。
-SKILL.md形式で提供し、`npx skills add` でインストール可能。
+Markdownファイルをnote.comに自動投稿・公開するClaude Codeエージェントスキル群。
+3つのスキル（note-draft / note-publish / note-automation）で構成される。
+- **note-draft**: 非公式API経由でMD→HTML変換 → 下書き保存
+- **note-publish**: Playwrightブラウザ操作でハッシュタグ設定 → 公開
+- **note-automation**: 上記2つを組み合わせた一気通貫パイプライン
 
 ## Commands
 
@@ -17,35 +19,51 @@ npm install
 # Playwrightブラウザインストール（初回のみ）
 npx playwright install --with-deps chromium
 
-# 記事投稿
+# 記事投稿（下書き保存）
 node scripts/publish.mjs <path/to/article.md>
 node scripts/publish.mjs <path> --image <path/to/header.jpg>
-## ※ 記事は常に下書きとして保存されます（note.comに公開APIは存在しません）
+
+# ハッシュタグ設定 + 公開（ブラウザ操作）
+node scripts/note-publish.mjs <article> --tags "AI,プログラミング" --publish
+node scripts/note-publish.mjs <article> --md <path> --publish
+
+# セレクタヘルスチェック
+node scripts/inspect-editor.mjs <articleKey> --check
 
 # テスト
-node --test tests/unit/              # ユニットテスト（常時実行可能）
+node --test tests/unit/*.test.mjs    # ユニットテスト（常時実行可能）
 node --test tests/contract/          # コントラクトテスト（要.env認証）
-node --test tests/                   # 全テスト
 ```
 
 ## Architecture
 
 ```
 note-md-publisher/
-├── SKILL.md                    # スキル定義（エントリポイント）
+├── skills/                         # スキル定義ディレクトリ
+│   ├── note-draft/SKILL.md         # 下書き投稿スキル（旧ルートSKILL.md）
+│   ├── note-publish/SKILL.md       # ハッシュタグ設定＋公開スキル
+│   └── note-automation/SKILL.md    # オーケストレーションスキル
 ├── scripts/
-│   └── publish.mjs             # メインスクリプト（CLI引数パース → 投稿フロー実行）
+│   ├── publish.mjs                 # 下書き投稿スクリプト（note-draft用）
+│   ├── note-publish.mjs            # 公開＋タグ設定スクリプト（note-publish用）
+│   └── inspect-editor.mjs          # UI調査＋セレクタヘルスチェック
 ├── lib/
-│   ├── auth.mjs                # 認証（Playwrightログイン + Cookie管理）
-│   ├── content-loader.mjs      # MD/MDX読込 + フロントマター解析
-│   ├── markdown-converter.mjs  # MD→HTML変換（unified + remark-html）
-│   ├── note-api.mjs            # note.com APIクライアント（2ステップ投稿）
-│   └── image-uploader.mjs      # 画像アップロード（multipart/form-data）
+│   ├── auth.mjs                    # 認証（Playwrightログイン + Cookie管理）
+│   ├── content-loader.mjs          # MD/MDX読込 + フロントマター解析
+│   ├── markdown-converter.mjs      # MD→HTML変換（unified + remark-html）
+│   ├── note-api.mjs                # note.com APIクライアント（2ステップ投稿）
+│   ├── image-uploader.mjs          # 画像アップロード（multipart/form-data）
+│   ├── browser.mjs                 # ブラウザコンテキスト管理（note-publish用）
+│   ├── hashtag.mjs                 # ハッシュタグ操作（note-publish用）
+│   ├── publish-action.mjs          # 公開操作（note-publish用）
+│   └── selectors.mjs               # UIセレクタ定数（note-publish用）
 ├── tests/
-│   ├── unit/                   # ユニットテスト（node:test）
-│   ├── contract/               # コントラクトテスト（実API検証）
-│   └── fixtures/               # テスト用サンプルデータ
-├── .specs/note-md-publisher/   # 仕様書（requirement.md, design.md, tasks.md）
+│   ├── unit/                       # ユニットテスト（node:test）
+│   ├── contract/                   # コントラクトテスト（実API検証）
+│   └── fixtures/                   # テスト用サンプルデータ
+├── .specs/
+│   ├── note-md-publisher/          # 既存仕様書
+│   └── note-publish/               # note-publish拡張仕様書
 ├── package.json
 ├── .env.example
 └── .gitignore
@@ -56,10 +74,12 @@ note-md-publisher/
 - **モジュール形式**: ESM (.mjs)。`import`/`export` を使用、`require` は使わない
 - **HTTPクライアント**: Node.js標準の `fetch` API（追加依存なし）
 - **テストフレームワーク**: `node:test`（Node.js 18+標準搭載、追加依存なし）
-- **2ステップ投稿**: `POST /api/v1/text_notes`（作成）→ `PUT /api/v1/text_notes/{article_id}`（更新）
+- **2ステップ投稿**: `POST /api/v1/text_notes`（作成）→ `POST /api/v1/text_notes/draft_save`（更新）
 - **本文形式**: note.com APIはHTML文字列を要求する（Markdownではない）
 - **Cookie認証**: Playwright でログイン → Cookie取得 → HTTPヘッダーに付与
 - **Cookie保存先**: `~/.config/note-md-publisher/cookies.json`（パーミッション 0600）
+- **ブラウザ操作**: note-publish用。Playwrightでエディタページのハッシュタグ入力・公開ボタンを操作
+- **セレクタ一元管理**: `lib/selectors.mjs` でnote.comのUIセレクタを一元管理。UI変更時はこのファイルのみ修正
 
 ## note.com API（非公式）
 

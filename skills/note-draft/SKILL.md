@@ -1,13 +1,13 @@
 ---
-name: note-md-publisher
-description: Markdownファイルをnote.comに自動投稿するスキル
+name: note-draft
+description: Markdownファイルをnote.comに下書き投稿するスキル
 version: 0.1.0
 license: MIT
 ---
 
-# note-md-publisher
+# note-draft
 
-Markdownファイルとヘッダー画像を指定して、note.comに記事を自動投稿します。
+Markdownファイルとヘッダー画像を指定して、note.comに記事を下書き保存します。
 
 ## トリガー
 
@@ -29,7 +29,7 @@ English:
 ### 1. 依存パッケージのインストール
 
 ```bash
-cd $SKILL_DIR && npm install
+cd "$SKILL_DIR/../.." && npm install
 ```
 
 ### 2. Playwrightブラウザのインストール
@@ -40,7 +40,7 @@ npx playwright install --with-deps chromium
 
 ### 3. 環境変数の設定
 
-`$SKILL_DIR/.env` ファイルを作成し、以下を設定してください：
+`$SKILL_DIR/../../.env` ファイルを作成し、以下を設定してください：
 
 ```
 NOTE_EMAIL=your-email@example.com
@@ -62,28 +62,19 @@ NOTE_USERNAMEは、あなたのnote.comプロフィールURL（`https://note.com
 1. **アイキャッチ画像**: 画像パスが `--image` やフロントマターの `image` で指定されていない場合
    - 選択肢: 「画像なしで投稿」「画像パスを指定する」
 
-```
-例: AskUserQuestion
-question: "投稿設定を確認します"
-options:
-  - header: "アイキャッチ画像"
-    - "画像なしで投稿"
-    - "画像パスを指定する"
-```
-
 ### 投稿コマンド
 
 **基本（下書き保存）：**
 ```bash
-cd $SKILL_DIR && node scripts/publish.mjs <path/to/article.md>
+cd "$SKILL_DIR/../.." && node scripts/publish.mjs <path/to/article.md>
 ```
 
 **ヘッダー画像付き：**
 ```bash
-cd $SKILL_DIR && node scripts/publish.mjs <path/to/article.md> --image <path/to/header.jpg>
+cd "$SKILL_DIR/../.." && node scripts/publish.mjs <path/to/article.md> --image <path/to/header.jpg>
 ```
 
-※ 記事は常に下書きとして保存されます。公開はnote.comのWebUIから行ってください。
+※ 記事は常に下書きとして保存されます。
 
 ### フロントマター
 
@@ -100,7 +91,7 @@ image: ./header.png
 ```
 
 - `title`: 記事タイトル（未指定の場合は本文のh1を使用）
-- `tags`: タグ（配列）
+- `tags`: タグ（配列）— note-publish スキルと連携時にハッシュタグとして設定されます
 - `image`: ヘッダー画像の相対パス
 
 ## 出力
@@ -119,6 +110,14 @@ image: ./header.png
 ✗ 記事の投稿に失敗しました
   エラー: 401 Unauthorized - Cookieが期限切れです
 ```
+
+## 連携
+
+下書き投稿後に公開やハッシュタグ設定を行うには、note-publish スキルを使用してください：
+- 「この記事を公開して」→ note-publish スキルが起動
+- 出力のURLまたは記事キーを note-publish に渡せます
+
+一気通貫で投稿から公開まで行うには、note-automation スキルを使用してください。
 
 ## トラブルシューティング
 
