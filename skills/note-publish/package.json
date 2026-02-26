@@ -1,0 +1,14 @@
+{
+  "name": "note-publish",
+  "version": "0.1.0",
+  "description": "Set hashtags and publish note.com draft articles via browser automation",
+  "type": "module",
+  "dependencies": {
+    "gray-matter": "^4.0.3",
+    "playwright": "^1.49.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT"
+}

@@ -61,17 +61,17 @@ options:
 
 **ハッシュタグ設定 + 公開：**
 ```bash
-cd "$SKILL_DIR/../.." && node scripts/note-publish.mjs <article> --tags "AI,プログラミング" --publish
+cd "$SKILL_DIR" && node scripts/note-publish.mjs <article> --tags "AI,プログラミング" --publish
 ```
 
 **ハッシュタグ設定のみ（下書き維持）：**
 ```bash
-cd "$SKILL_DIR/../.." && node scripts/note-publish.mjs <article> --tags "AI,プログラミング"
+cd "$SKILL_DIR" && node scripts/note-publish.mjs <article> --tags "AI,プログラミング"
 ```
 
 **MDファイルからタグ読取：**
 ```bash
-cd "$SKILL_DIR/../.." && node scripts/note-publish.mjs <article> --md <path/to/article.md> --publish
+cd "$SKILL_DIR" && node scripts/note-publish.mjs <article> --md <path/to/article.md> --publish
 ```
 
 ### 引数
@@ -116,7 +116,7 @@ cd "$SKILL_DIR/../.." && node scripts/note-publish.mjs <article> --md <path/to/a
 note.comのUI変更によりスキルが動作しなくなった場合、以下のコマンドでセレクタの有効性を検証できます：
 
 ```bash
-cd "$SKILL_DIR/../.." && node scripts/inspect-editor.mjs <articleKey> --check
+cd "$SKILL_DIR" && node scripts/inspect-editor.mjs <articleKey> --check
 ```
 
 ## トラブルシューティング

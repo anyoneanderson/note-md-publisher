@@ -29,7 +29,7 @@ English:
 ### 1. 依存パッケージのインストール
 
 ```bash
-cd "$SKILL_DIR/../.." && npm install
+cd "$SKILL_DIR" && npm install
 ```
 
 ### 2. Playwrightブラウザのインストール
@@ -40,7 +40,7 @@ npx playwright install --with-deps chromium
 
 ### 3. 環境変数の設定
 
-`$SKILL_DIR/../../.env` ファイルを作成し、以下を設定してください：
+`$SKILL_DIR/.env` ファイルを作成し、以下を設定してください：
 
 ```
 NOTE_EMAIL=your-email@example.com
@@ -66,12 +66,12 @@ NOTE_USERNAMEは、あなたのnote.comプロフィールURL（`https://note.com
 
 **基本（下書き保存）：**
 ```bash
-cd "$SKILL_DIR/../.." && node scripts/publish.mjs <path/to/article.md>
+cd "$SKILL_DIR" && node scripts/publish.mjs <path/to/article.md>
 ```
 
 **ヘッダー画像付き：**
 ```bash
-cd "$SKILL_DIR/../.." && node scripts/publish.mjs <path/to/article.md> --image <path/to/header.jpg>
+cd "$SKILL_DIR" && node scripts/publish.mjs <path/to/article.md> --image <path/to/header.jpg>
 ```
 
 ※ 記事は常に下書きとして保存されます。

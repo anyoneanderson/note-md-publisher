@@ -68,7 +68,7 @@ MDファイルから下書き投稿 → ハッシュタグ設定 → 公開ま�
 
 **Step 1: note-draft（下書き投稿）**
 ```bash
-cd "$SKILL_DIR/../.." && node scripts/publish.mjs <path/to/article.md>
+cd "$SKILL_DIR" && node scripts/publish.mjs <path/to/article.md>
 ```
 
 Step 1 の出力から articleKey を抽出します：
@@ -82,7 +82,7 @@ Step 1 の出力から articleKey を抽出します：
 
 **Step 2: note-publish（タグ設定 + 公開）**
 ```bash
-cd "$SKILL_DIR/../.." && node scripts/note-publish.mjs <articleKey> --tags "tag1,tag2" --publish
+cd "$SKILL_DIR" && node scripts/note-publish.mjs <articleKey> --tags "tag1,tag2" --publish
 ```
 
 `<articleKey>` には Step 1 で抽出した値を使用します。
@@ -91,7 +91,7 @@ cd "$SKILL_DIR/../.." && node scripts/note-publish.mjs <articleKey> --tags "tag1
 #### --skip-draft（既存下書きに対してタグ設定 + 公開）
 
 ```bash
-cd "$SKILL_DIR/../.." && node scripts/note-publish.mjs <articleURL or key> --tags "tag1,tag2" --publish
+cd "$SKILL_DIR" && node scripts/note-publish.mjs <articleURL or key> --tags "tag1,tag2" --publish
 ```
 
 Step 1 をスキップし、ユーザーが指定した既存の下書き記事に対して操作します。
@@ -101,14 +101,14 @@ Step 1 をスキップし、ユーザーが指定した既存の下書き記事�
 Step 1 を実行した後、Step 2 を `--publish` なしで実行します：
 
 ```bash
-cd "$SKILL_DIR/../.." && node scripts/publish.mjs <path/to/article.md>
-cd "$SKILL_DIR/../.." && node scripts/note-publish.mjs <articleKey> --tags "tag1,tag2"
+cd "$SKILL_DIR" && node scripts/publish.mjs <path/to/article.md>
+cd "$SKILL_DIR" && node scripts/note-publish.mjs <articleKey> --tags "tag1,tag2"
 ```
 
 #### --draft-only（下書き投稿のみ）
 
 ```bash
-cd "$SKILL_DIR/../.." && node scripts/publish.mjs <path/to/article.md>
+cd "$SKILL_DIR" && node scripts/publish.mjs <path/to/article.md>
 ```
 
 Step 2 をスキップし、note-draft のみ実行します。
