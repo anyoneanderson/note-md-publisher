@@ -4,9 +4,11 @@
 
 ## プロジェクト概要
 
-note.comにMarkdown記事を自動投稿するClaude Codeエージェントスキル。
-非公式API + 2ステップ下書き投稿（POST作成 → POST draft_save更新）。本文はHTML形式。
-公開APIは存在しないため、記事は常に下書きとして保存される。
+note.comにMarkdown記事を自動投稿・公開するClaude Codeエージェントスキル群。
+3つのスキル（note-draft / note-publish / note-automation）で構成される。
+- **note-draft**: 非公式API + 2ステップ下書き投稿（POST作成 → POST draft_save更新）。本文はHTML形式
+- **note-publish**: Playwrightブラウザ操作でハッシュタグ設定・記事公開（editor.note.com）
+- **note-automation**: 上記2つを組み合わせた一気通貫パイプライン
 
 ## 必須ルール
 
@@ -21,14 +23,26 @@ note.comにMarkdown記事を自動投稿するClaude Codeエージェントス�
 ## ディレクトリ構造
 
 ```
+skills/                         # スキル定義ディレクトリ
+├── note-draft/SKILL.md         # 下書き投稿スキル
+├── note-publish/SKILL.md       # ハッシュタグ設定＋公開スキル
+└── note-automation/SKILL.md    # オーケストレーションスキル
+
 lib/                            # コアモジュール（各ファイルが単一責任）
 ├── auth.mjs                    # Playwright認証 + Cookie永続化
 ├── content-loader.mjs          # ファイル読込 + gray-matter解析
 ├── markdown-converter.mjs      # MD→HTML変換（unified + remark-html）
 ├── note-api.mjs                # note.com API（2ステップ投稿）
-└── image-uploader.mjs          # 画像アップロード（multipart）
+├── image-uploader.mjs          # 画像アップロード（multipart）
+├── browser.mjs                 # ブラウザコンテキスト管理（note-publish用）
+├── hashtag.mjs                 # ハッシュタグ入力自動化（note-publish用）
+├── publish-action.mjs          # 公開/下書き保存操作（note-publish用）
+└── selectors.mjs               # UIセレクタ定数 role-based（note-publish用）
 
-scripts/publish.mjs             # メインスクリプト（CLI引数 → モジュール呼出）
+scripts/
+├── publish.mjs                 # 下書き投稿スクリプト（note-draft用）
+├── note-publish.mjs            # 公開＋タグ設定スクリプト（note-publish用）
+└── inspect-editor.mjs          # UI調査＋セレクタヘルスチェック
 
 tests/
 ├── unit/                       # ユニットテスト（外部依存なし、常時実行可能）
@@ -49,6 +63,14 @@ tests/
 - 本文の `body` は **HTML文字列**（Markdownではない）
 - 共通ヘッダー: `Content-Type: application/json`, `Cookie: ...`, `User-Agent: Mozilla/5.0 ...`
 
+## ブラウザ操作（note-publish）
+
+- **エディタURL**: `https://editor.note.com/notes/{key}/edit/`
+- **公開設定URL**: `https://editor.note.com/notes/{key}/publish/`
+- **セレクタ方式**: Playwright role-basedロケータ（`page.getByRole(role, { name })`）
+- **タグの保存制約**: ハッシュタグは「投稿する」（公開）時のみ保存される。下書き保存ではタグは保存されない
+- **フロー分離**: 公開フロー → publish page、下書きフロー → editor page
+
 ## テスト
 
 ```bash
@@ -56,7 +78,7 @@ node --test tests/unit/          # ユニットテスト
 node --test tests/contract/      # コントラクトテスト（要.env）
 ```
 
-- ユニットテスト: MarkdownConverter, ContentLoader の入出力検証
+- ユニットテスト: MarkdownConverter, ContentLoader, parseArticleInput, parseTags の入出力検証
 - コントラクトテスト: 実APIのレスポンス構造検証（仕様変更の早期検知）
 - コントラクトテストで作成した記事はDELETE APIが利用可能であれば削除してクリーンアップする（DELETE APIの存在はT002で確認）
 - `.env` 未設定時はコントラクトテストをスキップ（エラーにしない）
