@@ -13,25 +13,25 @@ CLIから記事キーとタグを指定して、note.comの下書き記事にハ
 
 ### Phase 1: UI調査 + 基盤
 
-- [ ] TP01: note.com エディタUI調査（セレクタ確定）
-- [ ] TP02: セレクタ定数モジュール作成
-- [ ] TP03: auth.mjs 拡張（rawCookies 返却対応）
+- [x] TP01: note.com エディタUI調査（セレクタ確定）
+- [x] TP02: セレクタ定数モジュール作成
+- [x] TP03: auth.mjs 拡張（rawCookies 返却対応）
 
 ### Phase 2: ブラウザ操作モジュール実装（MVP）
 
-- [ ] TP04: [REQ-P002, REQ-P003] ブラウザコンテキスト + ナビゲーション
-- [ ] TP05: [REQ-P004] ハッシュタグ入力モジュール
-- [ ] TP06: [REQ-P005] 公開操作モジュール
-- [ ] TP07: [REQ-P006] メインスクリプト（note-publish.mjs）
-- [ ] TP08: [NFR-P003] ユニットテスト
+- [x] TP04: [REQ-P002, REQ-P003] ブラウザコンテキスト + ナビゲーション
+- [x] TP05: [REQ-P004] ハッシュタグ入力モジュール
+- [x] TP06: [REQ-P005] 公開操作モジュール
+- [x] TP07: [REQ-P006] メインスクリプト（note-publish.mjs）
+- [x] TP08: [NFR-P003] ユニットテスト
 - [ ] TP09: MVP動作検証（ハッシュタグ設定の実機確認）
 
 ### Phase 3: スキル化 + 統合
 
-- [ ] TP10: [REQ-P007] skills/note-publish/SKILL.md 作成
-- [ ] TP11: [REQ-P008, REQ-P001] SKILL.md の skills/ への移行
-- [ ] TP12: [REQ-P009, REQ-P010] skills/note-automation/SKILL.md 作成
-- [ ] TP13: セレクタヘルスチェックスクリプト
+- [x] TP10: [REQ-P007] skills/note-publish/SKILL.md 作成
+- [x] TP11: [REQ-P008, REQ-P001] SKILL.md の skills/ への移行
+- [x] TP12: [REQ-P009, REQ-P010] skills/note-automation/SKILL.md 作成
+- [x] TP13: セレクタヘルスチェックスクリプト
 - [ ] TP14: E2E動作検証 + ドキュメント更新
 
 ### 優先度マッピング
