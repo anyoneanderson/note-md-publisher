@@ -24,14 +24,14 @@ node scripts/publish.mjs <path/to/article.md>
 node scripts/publish.mjs <path> --image <path/to/header.jpg>
 
 # ハッシュタグ設定 + 公開（ブラウザ操作）
-node scripts/note-publish.mjs <article> --tags "AI,プログラミング" --publish
-node scripts/note-publish.mjs <article> --md <path> --publish
+node scripts/note-publish.mjs <article> --tags "AI,プログラミング" --publish --yes
+node scripts/note-publish.mjs <article> --md <path> --publish --yes
 
 # セレクタヘルスチェック
 node scripts/inspect-editor.mjs <articleKey> --check
 
 # テスト
-node --test tests/unit/*.test.mjs    # ユニットテスト（常時実行可能）
+node --test tests/unit/              # ユニットテスト（常時実行可能）
 node --test tests/contract/          # コントラクトテスト（要.env認証）
 ```
 
@@ -78,8 +78,10 @@ note-md-publisher/
 - **本文形式**: note.com APIはHTML文字列を要求する（Markdownではない）
 - **Cookie認証**: Playwright でログイン → Cookie取得 → HTTPヘッダーに付与
 - **Cookie保存先**: `~/.config/note-md-publisher/cookies.json`（パーミッション 0600）
-- **ブラウザ操作**: note-publish用。Playwrightでエディタページのハッシュタグ入力・公開ボタンを操作
-- **セレクタ一元管理**: `lib/selectors.mjs` でnote.comのUIセレクタを一元管理。UI変更時はこのファイルのみ修正
+- **ブラウザ操作**: note-publish用。Playwright role-basedロケータ（`page.getByRole()`）でエディタ/公開ページのUI要素を操作
+- **エディタURL**: `editor.note.com`（エディタ: `/notes/{key}/edit/`、公開設定: `/notes/{key}/publish/`）
+- **セレクタ一元管理**: `lib/selectors.mjs` でnote.comのUIセレクタをrole-based形式で一元管理。UI変更時はこのファイルのみ修正
+- **タグの保存制約**: ハッシュタグは「投稿する」（公開）時のみ保存される。下書き保存ではタグは保存されない
 
 ## note.com API（非公式）
 
