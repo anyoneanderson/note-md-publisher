@@ -19,9 +19,14 @@ npm install
 # Playwrightブラウザインストール（初回のみ）
 npx playwright install --with-deps chromium
 
-# 記事投稿（下書き保存）
+# 記事投稿（下書き保存）— 本文画像なし → APIモード
 node scripts/publish.mjs <path/to/article.md>
 node scripts/publish.mjs <path> --image <path/to/header.jpg>
+
+# 記事投稿（下書き保存）— 本文画像あり → Playwrightモード（自動検出）
+node scripts/publish.mjs <path> --image-base <path/to/public>
+node scripts/publish.mjs <path> --draft-url <editor-url>  # 既存下書き更新
+node scripts/publish.mjs <path> --no-images               # 画像を無視してAPIモード
 
 # ハッシュタグ設定 + 公開（ブラウザ操作）
 node scripts/note-publish.mjs <article> --tags "AI,プログラミング" --publish --yes
@@ -50,7 +55,10 @@ note-md-publisher/
 ├── lib/
 │   ├── auth.mjs                    # 認証（Playwrightログイン + Cookie管理）
 │   ├── content-loader.mjs          # MD/MDX読込 + フロントマター解析
-│   ├── markdown-converter.mjs      # MD→HTML変換（unified + remark-html）
+│   ├── markdown-converter.mjs      # MD→HTML変換（unified + remark-html）— APIモード用
+│   ├── md-to-html.mjs              # MD→HTML変換（軽量・正規表現）— Playwrightモード用
+│   ├── md-splitter.mjs             # MD本文を画像位置で分割
+│   ├── playwright-publisher.mjs    # Playwrightモード（本文画像アップロード対応）
 │   ├── note-api.mjs                # note.com APIクライアント（2ステップ投稿）
 │   ├── image-uploader.mjs          # 画像アップロード（multipart/form-data）
 │   ├── browser.mjs                 # ブラウザコンテキスト管理（note-publish用）
@@ -74,7 +82,8 @@ note-md-publisher/
 - **モジュール形式**: ESM (.mjs)。`import`/`export` を使用、`require` は使わない
 - **HTTPクライアント**: Node.js標準の `fetch` API（追加依存なし）
 - **テストフレームワーク**: `node:test`（Node.js 18+標準搭載、追加依存なし）
-- **2ステップ投稿**: `POST /api/v1/text_notes`（作成）→ `POST /api/v1/text_notes/draft_save`（更新）
+- **デュアルモード投稿**: 本文画像なし → APIモード（高速）、本文画像あり → Playwrightモード（エディタ直接操作）
+- **2ステップ投稿（APIモード）**: `POST /api/v1/text_notes`（作成）→ `POST /api/v1/text_notes/draft_save`（更新）
 - **本文形式**: note.com APIはHTML文字列を要求する（Markdownではない）
 - **Cookie認証**: Playwright でログイン → Cookie取得 → HTTPヘッダーに付与
 - **Cookie保存先**: `~/.config/note-md-publisher/cookies.json`（パーミッション 0600）
