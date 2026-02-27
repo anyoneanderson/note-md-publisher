@@ -169,18 +169,29 @@ export async function publishWithImages({
           imageBtn.click(),
         ]);
         await fileChooser.setFiles(section.path);
-        await page.waitForTimeout(2000);
+
+        // Wait for image to be uploaded and rendered in editor
+        try {
+          await page.locator('figure img[src*="note"]').last()
+            .waitFor({ state: 'visible', timeout: 15000 });
+        } catch {
+          // Fallback: wait a fixed time if image selector not found
+          await page.waitForTimeout(5000);
+        }
+        await page.waitForTimeout(1000);
 
         await page.keyboard.press('ArrowDown');
         await page.keyboard.press('End');
-        await page.waitForTimeout(300);
+        await page.waitForTimeout(500);
       }
     }
 
     // --- Save draft ---
     console.log('下書き保存中...');
-    await page.getByRole('button', { name: '下書き保存' }).click();
+    // Wait for any pending image uploads to complete
     await page.waitForTimeout(3000);
+    await page.getByRole('button', { name: '下書き保存' }).click();
+    await page.waitForTimeout(5000);
 
     const editorUrl = page.url();
     const noteKey = editorUrl.match(/notes\/(n[a-f0-9]+)/)?.[1];
